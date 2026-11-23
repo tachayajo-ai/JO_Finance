@@ -1,5 +1,5 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
-<title>แผนเงินเกษียณ</title>
+<title>LIACAM Retirements</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -184,7 +184,7 @@ td.gov { color: var(--gov); }
 <div class="wrap">
   <header>
     <div>
-      <h1>แผนเงินเกษียณ</h1>
+      <h1>LIACAM Retirements</h1>
       <p>เงินลงทุนส่วนตัว + กบข. + บำนาญข้าราชการ เทียบกับเงินที่ต้องใช้หลังเกษียณจนถึงอายุขัยที่คาดไว้</p>
     </div>
     <div class="btnrow">
@@ -976,7 +976,7 @@ td.gov { color: var(--gov); }
     if (!last) return '';
     const r = last, p = r.p, g = r.g, gap = r.resources - r.required;
     return [
-      'สรุปแผนเงินเกษียณ',
+      'สรุปแผนเงินเกษียณ (LIACAM Retirements)',
       `- อายุ ${p.age} ปี (พ.ศ. ${p.year}) เกษียณอายุ ${p.retireAge} (พ.ศ. ${ageToYear(p, p.retireAge)}) วางแผนถึงอายุ ${p.lifeAge}`,
       `- ลงทุนส่วนตัว: ทุนตั้งต้น ${fmtB(p.initial)} เดือนละ ${fmtB(p.monthly)} เพิ่มปีละ ${p.stepUp}% ผลตอบแทน ${p.retPre}%/${p.retPost}% เงินเฟ้อ ${p.inflation}%`,
       g ? `- ข้าราชการ (${g.isGpf ? 'สมาชิก กบข.' : 'ระบบเดิม'}) เวลาราชการ ${g.service} ปี ${g.benefit === 'pension' ? `บำนาญ ${fmtB(g.pension)}/เดือน` : `บำเหน็จ ${fmtB(g.govLump)}`}` : null,
