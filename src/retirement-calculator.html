@@ -16,6 +16,8 @@
   --accent-soft: #d5ece7;
   --gov: #3d4fa8;
   --gov-soft: #e1e5f7;
+  --tax: #8a3f8f;
+  --tax-soft: #f3e3f4;
   --warm: #b5590a;
   --warm-soft: #fbe9d7;
   --good: #17803d;
@@ -28,13 +30,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0d1513; --surface: #142019; --sunken: #101a17; --ink: #e4eeeb; --muted: #94a7a1; --line: #24332f;
-    --accent: #3cc9b6; --accent-soft: #123a34; --gov: #9aa8f2; --gov-soft: #1d2342; --warm: #f2a03d; --warm-soft: #3a2812;
+    --accent: #3cc9b6; --accent-soft: #123a34; --gov: #9aa8f2; --gov-soft: #1d2342; --tax: #e0a1e4; --tax-soft: #34193a; --warm: #f2a03d; --warm-soft: #3a2812;
     --good: #5bd48a; --good-soft: #14321f; --bad: #f27a72; --bad-soft: #3a1715; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0d1513; --surface: #142019; --sunken: #101a17; --ink: #e4eeeb; --muted: #94a7a1; --line: #24332f;
-  --accent: #3cc9b6; --accent-soft: #123a34; --gov: #9aa8f2; --gov-soft: #1d2342; --warm: #f2a03d; --warm-soft: #3a2812;
+  --accent: #3cc9b6; --accent-soft: #123a34; --gov: #9aa8f2; --gov-soft: #1d2342; --tax: #e0a1e4; --tax-soft: #34193a; --warm: #f2a03d; --warm-soft: #3a2812;
   --good: #5bd48a; --good-soft: #14321f; --bad: #f27a72; --bad-soft: #3a1715; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -68,6 +70,15 @@ fieldset.gov legend { color: var(--gov); }
 .hint { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
 .switch { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--gov-soft); border-radius: 10px; cursor: pointer; font-weight: 500; }
 .switch input { width: 18px; height: 18px; accent-color: var(--gov); margin: 0; }
+fieldset.tax legend { color: var(--tax); }
+.switch.taxsw { background: var(--tax-soft); }
+.switch.taxsw input, #reinvestTax { accent-color: var(--tax); }
+.card.taxcard h3 { color: var(--tax); }
+.taxtop { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 700px) { .taxtop { grid-template-columns: minmax(0, 1fr); } }
+.taxtop .kpi { background: var(--sunken); border: 0; }
+.taxtop .kpi:first-child .val { color: var(--tax); }
+.kv div.on span:first-child { color: var(--ink); font-weight: 600; }
 .check { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer; }
 .check input { width: 16px; height: 16px; accent-color: var(--gov); margin: 3px 0 0; flex-shrink: 0; }
 .calcbar { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); margin: 0 -18px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); border-radius: 0 0 14px 14px; display: flex; flex-direction: column; gap: 6px; z-index: 2; }
@@ -161,6 +172,7 @@ td.gov { color: var(--gov); }
       <p>เงินลงทุนส่วนตัว + กบข. + บำนาญข้าราชการ เทียบกับเงินที่ต้องใช้หลังเกษียณจนถึงอายุขัยที่คาดไว้</p>
     </div>
     <div class="btnrow">
+      <button id="btnTheme" type="button" aria-label="สลับธีมมืด/สว่าง">โหมดมืด</button>
       <button id="btnCopy" type="button">คัดลอกสรุป</button>
       <button id="btnReset" type="button">ใช้ค่าตัวอย่าง</button>
     </div>
@@ -215,6 +227,22 @@ td.gov { color: var(--gov); }
         <label class="check"><input type="checkbox" id="lifeLump"><span>ขอรับบำเหน็จดำรงชีพเข้าพอร์ต (15 เท่าของบำนาญ ทยอยรับตอนเกษียณ อายุ 65 และ 70 ปี)</span></label>
       </fieldset>
 
+      <fieldset class="tax">
+        <legend>ลดหย่อนภาษี · RMF · SSF · Thai ESG</legend>
+        <label class="switch taxsw"><input type="checkbox" id="taxOn">คำนวณภาษีและสิทธิลดหย่อน</label>
+      </fieldset>
+
+      <fieldset class="tax" id="taxFields">
+        <div class="field full"><label for="taxIncome">เงินได้พึงประเมินทั้งปี</label><div class="inp"><input id="taxIncome" class="money" inputmode="decimal"><span>บาท/ปี</span></div><div class="hint" id="taxIncomeHint">ใส่ 0 เพื่อใช้เงินเดือน × 12 จากส่วนข้าราชการ</div></div>
+        <div class="field"><label for="rmf">ซื้อ RMF</label><div class="inp"><input id="rmf" class="money" inputmode="decimal"><span>บาท/ปี</span></div></div>
+        <div class="field"><label for="thaiEsg">ซื้อ Thai ESG</label><div class="inp"><input id="thaiEsg" class="money" inputmode="decimal"><span>บาท/ปี</span></div></div>
+        <div class="field full"><label for="ssf">ซื้อ SSF</label><div class="inp"><input id="ssf" class="money" inputmode="decimal"><span>บาท/ปี</span></div><div class="hint">ซื้อตั้งแต่ปี 2568 เป็นต้นไปใช้ลดหย่อนไม่ได้แล้ว</div></div>
+        <div class="field full"><label for="otherRetire">PVD / ประกันบำนาญ / กอช. (ส่วนที่ลดหย่อนได้)</label><div class="inp"><input id="otherRetire" class="money" inputmode="decimal"><span>บาท/ปี</span></div><div class="hint">นับรวมในเพดานกลุ่มเกษียณ 500,000 บาท ร่วมกับ RMF และเงินสะสม กบข.</div></div>
+        <div class="field full"><label for="otherDeduct">ลดหย่อนอื่น</label><div class="inp"><input id="otherDeduct" class="money" inputmode="decimal"><span>บาท/ปี</span></div><div class="hint">คู่สมรส บุตร พ่อแม่ ประกันสังคม ประกันชีวิต/สุขภาพ ดอกเบี้ยบ้าน ฯลฯ</div></div>
+        <label class="check"><input type="checkbox" id="reinvestTax"><span>นำเงินภาษีที่ลดได้ไปลงทุนเพิ่มในพอร์ตทุกปีจนเกษียณ</span></label>
+        <div class="field full hint">เงินที่ซื้อ RMF/Thai ESG ถือว่าอยู่ใน "ลงทุนเพิ่มทุกเดือน" แล้ว ไม่ได้บวกซ้ำ</div>
+      </fieldset>
+
       <fieldset>
         <legend>หลังเกษียณ</legend>
         <div class="field full"><label for="expense">ค่าใช้จ่ายต่อเดือน (คิดเป็นเงินวันนี้)</label><div class="inp"><input id="expense" class="money" inputmode="decimal"><span>บาท/เดือน</span></div><div class="hint">ระบบปรับตามเงินเฟ้อให้อัตโนมัติ</div></div>
@@ -248,6 +276,21 @@ td.gov { color: var(--gov); }
           <div><h4>บำเหน็จดำรงชีพ</h4><div class="kv" id="govLifeKv"></div></div>
         </div>
         <div class="warnline" id="govWarn"></div>
+      </div>
+
+      <div class="card taxcard" id="taxCard">
+        <div class="card-head"><h3 id="taxTitle">ภาษีเงินได้บุคคลธรรมดา</h3><span class="hint" id="taxHint"></span></div>
+        <div class="taxtop">
+          <div class="kpi"><span class="lbl">ภาษีลดได้จาก RMF/SSF/Thai ESG</span><span class="val" id="tSaved">–</span><span class="sub" id="tSavedSub"></span></div>
+          <div class="kpi"><span class="lbl">ภาษีที่ต้องจ่าย</span><span class="val" id="tTax">–</span><span class="sub" id="tTaxSub"></span></div>
+          <div class="kpi"><span class="lbl">ถ้าซื้อเต็มสิทธิ ลดภาษีได้</span><span class="val" id="tMax">–</span><span class="sub" id="tMaxSub"></span></div>
+        </div>
+        <div class="govgrid">
+          <div><h4>คำนวณเงินได้สุทธิ</h4><div class="kv" id="taxCalcKv"></div></div>
+          <div><h4>สิทธิกองทุน</h4><div class="kv" id="taxFundKv"></div></div>
+          <div><h4>อัตราภาษีขั้นบันได</h4><div class="kv" id="taxBracketKv"></div></div>
+        </div>
+        <div class="warnline" id="taxWarn"></div>
       </div>
 
       <div class="card">
@@ -296,6 +339,8 @@ td.gov { color: var(--gov); }
           <li>รับบำนาญเหตุสูงอายุได้เมื่อเวลาราชการครบ 10 ปี ถ้าไม่ครบ แอปคิดเป็นบำเหน็จ</li>
           <li>กบข.: สมาชิกสะสม 3% (ออมเพิ่มได้) รัฐสมทบ 3% เงินชดเชย 2% เฉพาะผู้เลือกรับบำนาญ</li>
           <li>บำเหน็จดำรงชีพ 15 เท่าของบำนาญ ยอดสะสมไม่เกิน 200,000 บาท (อายุต่ำกว่า 65), 400,000 บาท (65 ปีขึ้นไป), 500,000 บาท (70 ปีขึ้นไป) ตามกฎกระทรวงฯ พ.ศ. 2562</li>
+          <li>ภาษี: หักค่าใช้จ่ายเงินเดือน 50% ไม่เกิน 100,000 · ลดหย่อนส่วนตัว 60,000 · RMF ไม่เกิน 30% ของเงินได้ และรวมกลุ่มเกษียณ (RMF, เงินสะสม กบข., PVD, ประกันบำนาญ, กอช., SSF) ไม่เกิน 500,000 · Thai ESG ไม่เกิน 30% และ 300,000 (แยกจากกลุ่มเกษียณ) · SSF ที่ซื้อตั้งแต่ 1 ม.ค. 2568 ลดหย่อนไม่ได้ · เงินได้สุทธิคำนวณภาษีตามอัตราก้าวหน้า 0–35% (ประมวลรัษฎากร ม.48 และประกาศกรมสรรพากร)</li>
+          <li>แต่ละรายการยังมีเพดานย่อยของตัวเอง (เช่น PVD, ประกันบำนาญ) ให้ใส่เฉพาะยอดที่ลดหย่อนได้จริง · Thai ESG ต้องถือ 5 ปี RMF ต้องถือถึงอายุ 55 ปีและไม่น้อยกว่า 5 ปี</li>
           <li>เวลาราชการคิดเป็นปีเต็ม ยังไม่คิดเศษเดือน และนับเกษียณตามอายุที่ใส่ (ของจริงพ้นราชการ 30 ก.ย. ของปีงบประมาณที่อายุครบ 60 ปี)</li>
           <li>ยังไม่รวมภาษีและค่าธรรมเนียม ตัวเลขเป็นการประมาณการเพื่อวางแผน ไม่ใช่คำแนะนำการลงทุน</li>
         </ul>
@@ -308,19 +353,23 @@ td.gov { color: var(--gov); }
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  const STORE = 'retire-calc-v2';
+  const STORE = 'retire-calc-v3';
   const THIS_YEAR = new Date().getFullYear() + 543;
   const DEFAULTS = {
     year: THIS_YEAR, age: 35, retireAge: 60, lifeAge: 85,
     initial: 100000, monthly: 5000, stepUp: 3, retPre: 6, retPost: 4, inflation: 2,
     govOn: true, system: 'gpf', benefit: 'pension', salary: 30000, raise: 3, salaryCap: 0,
     serviceStart: THIS_YEAR - 10, extraService: 0, gpfBalance: 300000, gpfRate: 3, gpfReturn: 4, lifeLump: true,
+    taxOn: true, taxIncome: 0, rmf: 36000, thaiEsg: 0, ssf: 0, otherRetire: 0, otherDeduct: 0, reinvestTax: false,
     expense: 25000, otherIncome: 0
   };
+  const TAX_MONEY = ['taxIncome', 'rmf', 'thaiEsg', 'ssf', 'otherRetire', 'otherDeduct'];
+  const BRACKETS = [[150000, 0], [300000, 0.05], [500000, 0.10], [750000, 0.15], [1000000, 0.20], [2000000, 0.25], [5000000, 0.30], [Infinity, 0.35]];
+  const TAXR = { expensePct: 0.5, expenseMax: 100000, personal: 60000, fundPct: 0.3, retireGroupMax: 500000, esgMax: 300000, ssfMax: 200000, ssfLastYear: 2567 };
   const GOV = { match: 3, comp: 2, divisor: 50, capPct: 70, minPensionYears: 10, lifeMult: 15 };
   const lifeCapAt = (age) => (age >= 70 ? 500000 : age >= 65 ? 400000 : 200000);
   const FIELDS = Object.keys(DEFAULTS);
-  const BOOL = ['govOn', 'lifeLump'];
+  const BOOL = ['govOn', 'lifeLump', 'taxOn', 'reinvestTax'];
   const TEXT = ['system', 'benefit'];
   let view = 'nom', chart = null, last = null;
 
@@ -349,6 +398,8 @@ td.gov { color: var(--gov); }
     $('govSalary').hidden = !on;
     $('govFund').hidden = !on || !gpf;
     $('govLife').hidden = !on || $('benefit').value !== 'pension';
+    $('taxFields').hidden = !$('taxOn').checked;
+    $('taxIncomeHint').textContent = on ? 'ใส่ 0 เพื่อใช้เงินเดือน × 12 จากส่วนข้าราชการ' : 'เงินเดือน โบนัส และเงินได้อื่นทั้งปี';
     $('otherIncomeLbl').textContent = on ? 'รายได้อื่นหลังเกษียณ (นอกเหนือบำนาญ)' : 'รายได้อื่นหลังเกษียณ';
   }
 
@@ -361,6 +412,7 @@ td.gov { color: var(--gov); }
     });
     if (isNaN(p.salaryCap)) p.salaryCap = 0;
     if (isNaN(p.extraService)) p.extraService = 0;
+    TAX_MONEY.forEach((k) => { if (isNaN(p[k])) p[k] = 0; });
     const need = ['year', 'age', 'retireAge', 'lifeAge', 'initial', 'monthly', 'stepUp', 'retPre', 'retPost', 'inflation', 'expense', 'otherIncome'];
     if (p.govOn) need.push('salary', 'raise', 'serviceStart', ...(p.system === 'gpf' ? ['gpfBalance', 'gpfRate', 'gpfReturn'] : []));
     if (need.some((k) => isNaN(p[k]))) errs.push('กรอกตัวเลขให้ครบทุกช่อง');
@@ -371,6 +423,8 @@ td.gov { color: var(--gov); }
       if (p.lifeAge > 110) errs.push('อายุขัยที่วางแผนไม่ควรเกิน 110 ปี');
       if ([p.initial, p.monthly, p.expense, p.otherIncome].some((x) => x < 0)) errs.push('จำนวนเงินต้องไม่ติดลบ');
       if ([p.retPre, p.retPost, p.inflation].some((x) => x <= -100)) errs.push('อัตราร้อยละต้องมากกว่า −100');
+      if (p.taxOn && TAX_MONEY.some((k) => p[k] < 0)) errs.push('ตัวเลขในส่วนภาษีต้องไม่ติดลบ');
+      if (p.taxOn && p.taxIncome <= 0 && !p.govOn) errs.push('ใส่เงินได้พึงประเมินทั้งปีในส่วนภาษี');
       if (p.govOn) {
         if (p.salary <= 0) errs.push('ใส่เงินเดือนปัจจุบัน');
         if (p.serviceStart > p.year) errs.push('ปีเริ่มรับราชการต้องไม่เกินปีปัจจุบัน');
@@ -392,6 +446,7 @@ td.gov { color: var(--gov); }
     for (let y = 0; y < years; y++) {
       let c = 0, g = 0;
       for (let i = 0; i < 12; i++) { bal += m; c += m; const gi = bal * r; bal += gi; g += gi; }
+      if (p.taxAdd) { bal += p.taxAdd; c += p.taxAdd; }
       contributed += c;
       if (collect) rows.push({ y, phase: 'acc', contrib: c, gain: g, end: bal, contributed, monthly: m });
       m *= 1 + p.stepUp / 100;
@@ -442,6 +497,38 @@ td.gov { color: var(--gov); }
       ages.forEach((a) => { const amt = Math.max(0, Math.min(full, lifeCapAt(a)) - got); if (amt > 0) { life.push({ age: a, k: a - p.retireAge, amt }); got += amt; } });
     }
     return { service, lastSal, avg60, eligible, benefit, isGpf, pension, pensionRaw, pensionCap, pensionCalc, lumpAlt, govLump, gpf, life };
+  }
+
+  function pit(net) {
+    let tax = 0, prev = 0;
+    for (const [cap, r] of BRACKETS) { if (net > prev) tax += (Math.min(net, cap) - prev) * r; prev = cap; }
+    return tax;
+  }
+  const marginalRate = (net) => { for (const [cap, r] of BRACKETS) if (net <= cap) return r; return 0.35; };
+
+  function taxCalc(p) {
+    if (!p.taxOn) return null;
+    const income = p.taxIncome > 0 ? p.taxIncome : (p.govOn ? p.salary * 12 : 0);
+    const expense = Math.min(income * TAXR.expensePct, TAXR.expenseMax);
+    const gpfOwn = p.govOn && p.system === 'gpf' ? p.salary * 12 * p.gpfRate / 100 : 0;
+    const cap30 = income * TAXR.fundPct;
+    let room = TAXR.retireGroupMax;
+    const gpfD = Math.min(gpfOwn, room); room -= gpfD;
+    const othR = Math.min(p.otherRetire, room); room -= othR;
+    const ssfOk = p.year <= TAXR.ssfLastYear;
+    const ssfD = ssfOk ? Math.min(p.ssf, cap30, TAXR.ssfMax, room) : 0; room -= ssfD;
+    const rmfMax = Math.max(0, Math.min(cap30, room));
+    const rmfD = Math.min(p.rmf, rmfMax);
+    const esgMax = Math.min(cap30, TAXR.esgMax);
+    const esgD = Math.min(p.thaiEsg, esgMax);
+    const base = expense + TAXR.personal + p.otherDeduct + gpfD + othR;
+    const netBefore = Math.max(0, income - base);
+    const netAfter = Math.max(0, netBefore - ssfD - rmfD - esgD);
+    const netMax = Math.max(0, netBefore - ssfD - rmfMax - esgMax);
+    const taxBefore = pit(netBefore), taxAfter = pit(netAfter), taxMax = pit(netMax);
+    return { income, expense, gpfOwn, gpfD, othR, ssfOk, ssfD, rmfD, rmfMax, esgD, esgMax, netBefore, netAfter, taxBefore, taxAfter,
+      saved: taxBefore - taxAfter, savedMax: taxBefore - taxMax, rmfLeft: Math.max(0, rmfMax - p.rmf), esgLeft: Math.max(0, esgMax - p.thaiEsg),
+      rateBefore: marginalRate(netBefore), rateAfter: marginalRate(netAfter), cap30, room: TAXR.retireGroupMax - gpfD - othR - ssfD - rmfD };
   }
 
   function compute(p, retPre) {
@@ -516,7 +603,10 @@ td.gov { color: var(--gov); }
       return;
     }
     save(p);
+    const t = taxCalc(p);
+    p.taxAdd = t && p.reinvestTax ? t.saved : 0;
     const r = compute(p);
+    r.t = t;
     last = r;
     const g = r.g;
     const retYear = ageToYear(p, p.retireAge), lifeYear = ageToYear(p, p.lifeAge);
@@ -562,10 +652,12 @@ td.gov { color: var(--gov); }
       `ใช้เงินหลังเกษียณ <b>${r.yearsRet} ปี</b>`,
       `ค่าใช้จ่าย ณ ปีเกษียณ <b>${fmt(r.expenseAtRet)}</b>/เดือน`,
       `ถอนจากเงินก้อนเดือนแรก <b>${fmt(netAtRet)}</b>`,
-      g ? `เวลาราชการ <b>${g.service} ปี</b>` : null
+      g ? `เวลาราชการ <b>${g.service} ปี</b>` : null,
+      r.t && r.t.saved ? `ภาษีลดได้ <b>${fmt(r.t.saved)}</b>/ปี${p.reinvestTax ? ' (นำไปลงทุนต่อ)' : ''}` : null
     ].filter(Boolean).map((t) => `<span class="chip">${t}</span>`).join('');
 
     renderGov(r);
+    renderTax(r);
     renderChart(r);
     renderSens(p, r);
     renderTable(r);
@@ -605,6 +697,51 @@ td.gov { color: var(--gov); }
     if (!g.eligible && p.benefit === 'pension') warns.push(`เวลาราชการ ${g.service} ปี ยังไม่ถึง 10 ปี จึงรับบำนาญไม่ได้ แอปคิดเป็นบำเหน็จแทน`);
     if (p.salaryCap <= 0) warns.push('ยังไม่ได้ใส่เงินเดือนสูงสุดของระดับ เงินเดือนจะขึ้นต่อเนื่องจนเกษียณ ซึ่งอาจสูงเกินจริง');
     $('govWarn').textContent = warns.join(' · ');
+  }
+
+  function renderTax(r) {
+    const t = r.t, p = r.p;
+    $('taxCard').hidden = !t;
+    if (!t) return;
+    $('taxTitle').textContent = `ภาษีเงินได้ปีภาษี ${p.year}`;
+    $('taxHint').textContent = `ฐานภาษีสูงสุด ${(t.rateBefore * 100).toFixed(0)}%${t.rateAfter !== t.rateBefore ? ` → ${(t.rateAfter * 100).toFixed(0)}% หลังลดหย่อนกองทุน` : ''}`;
+    $('tSaved').textContent = fmt(t.saved);
+    $('tSavedSub').textContent = t.saved > 0 ? `จาก ${fmt(t.rmfD + t.ssfD + t.esgD)} ที่ลดหย่อนได้` : 'ยังไม่ได้ใช้สิทธิกองทุน';
+    $('tTax').textContent = fmt(t.taxAfter);
+    $('tTaxSub').textContent = `ก่อนลดหย่อนกองทุน ${fmt(t.taxBefore)}`;
+    $('tMax').textContent = fmt(t.savedMax);
+    $('tMaxSub').textContent = t.rmfLeft + t.esgLeft > 0 ? `ซื้อ RMF เพิ่มได้ ${fmt(t.rmfLeft)} · Thai ESG เพิ่มได้ ${fmt(t.esgLeft)}` : 'ใช้สิทธิเต็มแล้ว';
+    $('taxCalcKv').innerHTML = kv([
+      ['เงินได้พึงประเมิน', fmt(t.income)],
+      ['หักค่าใช้จ่าย 50% (≤100,000)', '−' + fmt(t.expense)],
+      ['ลดหย่อนส่วนตัว', '−' + fmt(TAXR.personal)],
+      t.gpfD ? [`เงินสะสม กบข. ${p.gpfRate}%`, '−' + fmt(t.gpfD)] : null,
+      t.othR ? ['PVD/ประกันบำนาญ/กอช.', '−' + fmt(t.othR)] : null,
+      p.otherDeduct ? ['ลดหย่อนอื่น', '−' + fmt(p.otherDeduct)] : null,
+      ['เงินได้สุทธิก่อนลดหย่อนกองทุน', fmt(t.netBefore)],
+      ['หัก RMF + SSF + Thai ESG', '−' + fmt(t.rmfD + t.ssfD + t.esgD)],
+      ['เงินได้สุทธิ', fmt(t.netAfter), 'total']
+    ]);
+    $('taxFundKv').innerHTML = kv([
+      ['RMF ใช้ได้ / สิทธิสูงสุด', `${fmt(t.rmfD)} / ${fmt(t.rmfMax)}`],
+      ['Thai ESG ใช้ได้ / สิทธิสูงสุด', `${fmt(t.esgD)} / ${fmt(t.esgMax)}`],
+      ['SSF ใช้ได้', t.ssfOk ? fmt(t.ssfD) : 'หมดสิทธิแล้ว'],
+      ['30% ของเงินได้', fmt(t.cap30)],
+      ['เพดานกลุ่มเกษียณเหลือ', `${fmt(Math.max(0, t.room))} / 500,000`]
+    ]);
+    let prev = 0;
+    $('taxBracketKv').innerHTML = BRACKETS.slice(0, 7).map(([cap, rate]) => {
+      const on = t.netAfter > prev && (t.netAfter <= cap);
+      const label = `${prev === 0 ? '0' : fmt(prev + 1)} – ${cap === Infinity ? 'ขึ้นไป' : fmt(cap)}`;
+      prev = cap;
+      return `<div class="${on ? 'on' : ''}"><span>${label}${on ? ' ◀' : ''}</span><span>${(rate * 100).toFixed(0)}%</span></div>`;
+    }).join('') + `<div class="${t.netAfter > 5000000 ? 'on' : ''}"><span>5,000,001 ขึ้นไป</span><span>35%</span></div>`;
+    const w = [];
+    if (!t.ssfOk && p.ssf > 0) w.push(`SSF ${fmt(p.ssf)} บาท ใช้ลดหย่อนไม่ได้ เพราะ SSF ที่ซื้อตั้งแต่ปี 2568 ไม่มีสิทธิลดหย่อน`);
+    if (p.rmf > t.rmfMax) w.push(`RMF เกินสิทธิ ${fmt(p.rmf - t.rmfMax)} บาท ส่วนเกินลดหย่อนไม่ได้`);
+    if (p.thaiEsg > t.esgMax) w.push(`Thai ESG เกินสิทธิ ${fmt(p.thaiEsg - t.esgMax)} บาท`);
+    if (t.rateBefore === 0) w.push('เงินได้สุทธิอยู่ในช่วงยกเว้นภาษี ซื้อกองทุนเพิ่มไม่ช่วยลดภาษี');
+    $('taxWarn').textContent = w.join(' · ');
   }
 
   function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -731,6 +868,7 @@ td.gov { color: var(--gov); }
       g ? `- ข้าราชการ (${g.isGpf ? 'สมาชิก กบข.' : 'ระบบเดิม'}) เวลาราชการ ${g.service} ปี ${g.benefit === 'pension' ? `บำนาญ ${fmtB(g.pension)}/เดือน` : `บำเหน็จ ${fmtB(g.govLump)}`}` : null,
       g && g.isGpf ? `- เงิน กบข. ณ เกษียณ ${fmtB(g.gpf.bal)}` : null,
       g && g.life.length ? `- บำเหน็จดำรงชีพรวม ${fmtB(g.life.reduce((a, e) => a + e.amt, 0))}` : null,
+      r.t ? `- ภาษีปี ${p.year}: RMF ${fmtB(r.t.rmfD)} Thai ESG ${fmtB(r.t.esgD)} ลดภาษีได้ ${fmtB(r.t.saved)} (ซื้อเต็มสิทธิลดได้ ${fmtB(r.t.savedMax)})` : null,
       `- ค่าใช้จ่าย ${fmtB(p.expense)}/เดือน (เงินวันนี้) = ${fmtB(r.expenseAtRet)}/เดือน ณ ปีเกษียณ`,
       `- เงินก้อน ณ เกษียณ ${fmtB(r.resources)} · เงินที่ต้องมี ${fmtB(r.required)}`,
       gap >= 0 ? `- ผล: เงินพอ เหลือ ณ อายุ ${p.lifeAge} ประมาณ ${fmtB(r.endBal)}`
@@ -772,6 +910,20 @@ td.gov { color: var(--gov); }
   try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rerenderChart); } catch (e) {}
   new MutationObserver(rerenderChart).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(rerenderChart);
+
+  // Theme toggle (remembered per browser)
+  const THEME_KEY = 'retire-theme';
+  const isDark = () => { const a = document.documentElement.getAttribute('data-theme'); return a ? a === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; };
+  const syncThemeBtn = () => { $('btnTheme').textContent = isDark() ? '☀ โหมดสว่าง' : '☾ โหมดมืด'; };
+  try { const t = localStorage.getItem(THEME_KEY); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  $('btnTheme').addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  });
+  new MutationObserver(syncThemeBtn).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncThemeBtn); } catch (e) {}
+  syncThemeBtn();
 
   load();
   calculate();
