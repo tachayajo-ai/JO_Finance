@@ -40,6 +40,7 @@
   --good: #5bd48a; --good-soft: #14321f; --bad: #f27a72; --bad-soft: #3a1715; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -69,6 +70,11 @@ fieldset.gov legend { color: var(--gov); }
 .inp span { color: var(--muted); font-size: 0.8rem; padding-right: 10px; white-space: nowrap; }
 .hint { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
 .switch { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--gov-soft); border-radius: 10px; cursor: pointer; font-weight: 500; }
+.switch.over50 { background: var(--sunken); border: 1px solid var(--line); align-items: flex-start; font-size: 0.9rem; }
+.switch.over50 span { display: flex; flex-direction: column; }
+.switch.over50 small { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+.switch.over50 input { margin-top: 2px; flex-shrink: 0; }
+.switch.over50:has(input:checked) { background: var(--gov-soft); border-color: var(--gov); }
 .switch input { width: 18px; height: 18px; accent-color: var(--gov); margin: 0; }
 fieldset.tax legend { color: var(--tax); }
 .switch.taxsw { background: var(--tax-soft); }
@@ -230,6 +236,7 @@ td.gov { color: var(--gov); }
         <div class="field"><label for="posNext">คาดว่าจะเลื่อนเป็น</label><div class="inp"><select id="posNext"></select></div></div>
         <div class="field" id="promoWrap"><label for="promoYear">ปีที่เลื่อน</label><div class="inp"><input id="promoYear" inputmode="numeric"><span>พ.ศ.</span></div></div>
         <div class="field full hint" id="posNextHint"></div>
+        <label class="switch over50"><input type="checkbox" id="over50"><span>ใช้สิทธิเงินเดือนสูงกว่าขั้นสูง (ม.50/1)<small>เต็มขั้นแล้วเงินเดือนขึ้นต่อได้ถึงเพดานของระดับถัดไป โดยยังดำรงตำแหน่งเดิม</small></span></label>
         <div class="field"><label for="serviceStart">เริ่มรับราชการ</label><div class="inp"><input id="serviceStart" inputmode="numeric"><span>พ.ศ.</span></div></div>
         <div class="field"><label for="extraService">เวลาราชการเพิ่ม</label><div class="inp"><input id="extraService" inputmode="decimal"><span>ปี</span></div></div>
         <div class="field full hint">เวลาราชการเพิ่ม เช่น วันทวีคูณ หรือเวลาที่โอนมานับต่อ</div>
@@ -360,6 +367,7 @@ td.gov { color: var(--gov); }
           <li>สมาชิก กบข.: บำนาญ = เงินเดือนเฉลี่ย 60 เดือนสุดท้าย × เวลาราชการ ÷ 50 ไม่เกิน 70% ของเงินเดือนเฉลี่ย (พ.ร.บ. กบข. พ.ศ. 2539)</li>
           <li>ไม่เป็นสมาชิก กบข.: บำนาญ = เงินเดือนเดือนสุดท้าย × เวลาราชการ ÷ 50 · บำเหน็จ = เงินเดือนเดือนสุดท้าย × เวลาราชการ (พ.ร.บ. บำเหน็จบำนาญข้าราชการ พ.ศ. 2494)</li>
           <li>เพดานเงินเดือนตามระดับ: บัญชีเงินเดือนขั้นต่ำ–ขั้นสูงข้าราชการพลเรือนสามัญ ท้าย พ.ร.บ. ระเบียบข้าราชการพลเรือน (ฉบับที่ 4) พ.ศ. 2558 ยังไม่รวมขั้นสูงชั่วคราวและเงินประจำตำแหน่ง (ซึ่งไม่นำมาคำนวณบำเหน็จบำนาญ) · เมื่อเลื่อนระดับ เงินเดือนปรับขึ้นอย่างน้อยเท่าขั้นต่ำของระดับใหม่</li>
+          <li>สิทธิเงินเดือนสูงกว่าขั้นสูง (ม.50/1 พ.ร.บ. ระเบียบข้าราชการพลเรือน พ.ศ. 2551 แก้ไขเพิ่มเติม, หลักเกณฑ์ ก.พ. ที่ ครม. เห็นชอบ มีผล 1 ต.ค. 2559): ผู้เงินเดือนถึงขั้นสูงและได้รับการพิจารณาเลื่อนเงินเดือน ให้ได้รับเงินเดือนของระดับถัดไปในประเภทเดียวกันอีก 1 ระดับ แอปถือว่ามีสิทธิทุกปี เงื่อนไขและข้อยกเว้นให้ตรวจกับหนังสือเวียน ก.พ. และการเจ้าหน้าที่</li>
           <li>รับบำนาญเหตุสูงอายุได้เมื่อเวลาราชการครบ 10 ปี ถ้าไม่ครบ แอปคิดเป็นบำเหน็จ</li>
           <li>กบข.: สมาชิกสะสม 3% (ออมเพิ่มได้) รัฐสมทบ 3% เงินชดเชย 2% เฉพาะผู้เลือกรับบำนาญ</li>
           <li>บำเหน็จดำรงชีพ 15 เท่าของบำนาญ ยอดสะสมไม่เกิน 200,000 บาท (อายุต่ำกว่า 65), 400,000 บาท (65 ปีขึ้นไป), 500,000 บาท (70 ปีขึ้นไป) ตามกฎกระทรวงฯ พ.ศ. 2562</li>
@@ -377,12 +385,12 @@ td.gov { color: var(--gov); }
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  const STORE = 'retire-calc-v4';
+  const STORE = 'retire-calc-v5';
   const THIS_YEAR = new Date().getFullYear() + 543;
   const DEFAULTS = {
     year: THIS_YEAR, age: 35, retireAge: 60, lifeAge: 85,
     initial: 100000, monthly: 5000, stepUp: 3, retPre: 6, retPost: 4, inflation: 2,
-    govOn: true, system: 'gpf', benefit: 'pension', salary: 30000, raise: 3, salaryCap: 0, posNow: 'k2', posNext: 'k3', promoYear: THIS_YEAR + 5,
+    govOn: true, system: 'gpf', benefit: 'pension', salary: 30000, raise: 3, salaryCap: 0, posNow: 'k2', posNext: 'k3', promoYear: THIS_YEAR + 5, over50: false,
     serviceStart: THIS_YEAR - 10, extraService: 0, gpfBalance: 300000, gpfRate: 3, gpfReturn: 4, lifeLump: true,
     taxOn: true, taxIncome: 0, rmf: 36000, thaiEsg: 0, ssf: 0, otherRetire: 0, otherDeduct: 0, reinvestTax: false,
     expense: 25000, otherIncome: 0
@@ -393,7 +401,7 @@ td.gov { color: var(--gov); }
   const GOV = { match: 3, comp: 2, divisor: 50, capPct: 70, minPensionYears: 10, lifeMult: 15 };
   const lifeCapAt = (age) => (age >= 70 ? 500000 : age >= 65 ? 400000 : 200000);
   const FIELDS = Object.keys(DEFAULTS);
-  const BOOL = ['govOn', 'lifeLump', 'taxOn', 'reinvestTax'];
+  const BOOL = ['govOn', 'lifeLump', 'taxOn', 'reinvestTax', 'over50'];
   const TEXT = ['system', 'benefit', 'posNow', 'posNext'];
   // บัญชีเงินเดือนข้าราชการพลเรือนสามัญ (ขั้นต่ำ–ขั้นสูง) ท้าย พ.ร.บ.ฯ พ.ศ. 2558
   const LEVELS = [
@@ -402,6 +410,9 @@ td.gov { color: var(--gov); }
     ['d1', 'อำนวยการ', 'ต้น', 26660, 59500], ['d2', 'อำนวยการ', 'สูง', 32850, 70360],
     ['b1', 'บริหาร', 'ต้น', 51140, 74320], ['b2', 'บริหาร', 'สูง', 56380, 76800]
   ].reduce((o, [id, type, name, min, max]) => (o[id] = { type, name, min, max }, o), {});
+  // ระดับถัดไปในประเภทเดียวกัน (ใช้กับสิทธิเงินเดือนสูงกว่าขั้นสูง ม.50/1)
+  const nextLevel = (id) => { const ids = Object.keys(LEVELS); const i = ids.indexOf(id); const n = ids[i + 1]; return n && LEVELS[n] && LEVELS[n].type === LEVELS[id].type ? n : null; };
+  const effMax = (id, over) => { if (!LEVELS[id]) return Infinity; const n = over ? nextLevel(id) : null; return n ? LEVELS[n].max : LEVELS[id].max; };
   const lvName = (id) => (LEVELS[id] ? `${LEVELS[id].type} · ${LEVELS[id].name}` : id === 'custom' ? 'กำหนดเพดานเอง' : '–');
   (function buildLevelOptions() {
     const groups = {};
@@ -445,8 +456,10 @@ td.gov { color: var(--gov); }
     const pn = $('posNow').value, nx = $('posNext').value;
     $('salaryCapWrap').hidden = pn !== 'custom';
     $('promoWrap').hidden = nx === 'none';
-    $('posNowHint').textContent = LEVELS[pn] ? `เพดานเงินเดือน ${LEVELS[pn].max.toLocaleString('th-TH')} บาท` : '';
-    $('posNextHint').textContent = LEVELS[nx] ? `เงินเดือนขั้นต่ำ ${LEVELS[nx].min.toLocaleString('th-TH')} · เพดาน ${LEVELS[nx].max.toLocaleString('th-TH')} บาท หลังเลื่อน` : 'เงินเดือนจะขึ้นได้ถึงเพดานของระดับปัจจุบันเท่านั้น';
+    const ov = $('over50').checked, th = (n) => n.toLocaleString('th-TH');
+    $('over50').closest('label').hidden = pn === 'custom';
+    $('posNowHint').textContent = LEVELS[pn] ? `เพดานเงินเดือน ${th(LEVELS[pn].max)} บาท` + (ov && nextLevel(pn) ? ` → ขยายเป็น ${th(effMax(pn, true))} (เพดาน${LEVELS[nextLevel(pn)].name})` : ov ? ' (ระดับสูงสุดของประเภทแล้ว ขยายไม่ได้)' : '') : '';
+    $('posNextHint').textContent = LEVELS[nx] ? `เงินเดือนขั้นต่ำ ${th(LEVELS[nx].min)} · เพดาน ${th(effMax(nx, ov))} บาท หลังเลื่อน${ov && nextLevel(nx) ? ' (รวมสิทธิ ม.50/1)' : ''}` : 'เงินเดือนจะขึ้นได้ถึงเพดานของระดับปัจจุบันเท่านั้น';
     $('taxIncomeHint').textContent = on ? 'ใส่ 0 เพื่อใช้เงินเดือน × 12 จากส่วนข้าราชการ' : 'เงินเดือน โบนัส และเงินได้อื่นทั้งปี';
     $('otherIncomeLbl').textContent = on ? 'รายได้อื่นหลังเกษียณ (นอกเหนือบำนาญ)' : 'รายได้อื่นหลังเกษียณ';
   }
@@ -487,11 +500,11 @@ td.gov { color: var(--gov); }
   }
 
   const mrate = (pct) => Math.pow(1 + pct / 100, 1 / 12) - 1;
-  const levelCap = (p, lv) => (LEVELS[lv] ? LEVELS[lv].max : lv === 'custom' && p.salaryCap > 0 ? p.salaryCap : Infinity);
+  const levelCap = (p, lv) => (LEVELS[lv] ? effMax(lv, p.over50) : lv === 'custom' && p.salaryCap > 0 ? p.salaryCap : Infinity);
   const levelAt = (p, y) => (p.posNext !== 'none' && LEVELS[p.posNext] && p.year + y >= p.promoYear ? p.posNext : p.posNow);
   // Salary path: yearly raise, floor bump to the new level's minimum on promotion, capped at the level's maximum
   function salaryAt(p, y) {
-    const key = [p.salary, p.raise, p.salaryCap, p.posNow, p.posNext, p.promoYear, p.year].join('|');
+    const key = [p.salary, p.raise, p.salaryCap, p.posNow, p.posNext, p.promoYear, p.year, p.over50].join('|');
     if (!p._sal || p._salKey !== key) { p._sal = [p.salary]; p._salKey = key; }
     if (y < 0) return Math.min(p.salary / Math.pow(1 + p.raise / 100, -y), levelCap(p, p.posNow));
     const arr = p._sal;
@@ -742,6 +755,7 @@ td.gov { color: var(--gov); }
     const breakEven = g.pensionCalc > 0 ? g.lumpAlt / g.pensionCalc : 0;
     $('govPension').innerHTML = kv([
       ['ระดับ ณ เกษียณ', lvName(levelAt(p, r.yearsAcc - 1))],
+      (() => { const lv = levelAt(p, r.yearsAcc - 1); return LEVELS[lv] && g.lastSal > LEVELS[lv].max + 0.5 ? ['เงินเดือนเกินขั้นสูง (ม.50/1)', `+${fmt(g.lastSal - LEVELS[lv].max)}`] : null; })(),
       ['เวลาราชการ', `${g.service} ปี`],
       ['เงินเดือนเดือนสุดท้าย', fmt(g.lastSal)],
       g.isGpf ? ['เงินเดือนเฉลี่ย 60 เดือน', fmt(g.avg60)] : null,
@@ -768,7 +782,9 @@ td.gov { color: var(--gov); }
     if (p.posNow === 'custom' && p.salaryCap <= 0) warns.push('ยังไม่ได้ใส่เพดานเงินเดือน เงินเดือนจะขึ้นต่อเนื่องจนเกษียณ ซึ่งอาจสูงเกินจริง');
     if (LEVELS[p.posNow] && p.salary > LEVELS[p.posNow].max) warns.push(`เงินเดือนปัจจุบันสูงกว่าขั้นสูงของระดับ ${LEVELS[p.posNow].name} ตรวจสอบระดับหรือขั้นสูงชั่วคราว`);
     const capHitY = r.yearsAcc > 0 ? [...Array(r.yearsAcc).keys()].find((y) => salaryAt(p, y) >= levelCap(p, levelAt(p, y)) - 0.5) : undefined;
-    if (capHitY !== undefined) warns.push(`เงินเดือนชนเพดาน${lvName(levelAt(p, capHitY))} ตั้งแต่ พ.ศ. ${p.year + capHitY}`);
+    if (capHitY !== undefined) { const lv = levelAt(p, capHitY), n = p.over50 && LEVELS[lv] ? nextLevel(lv) : null;
+      warns.push(n ? `เงินเดือนชนเพดานที่ขยายตาม ม.50/1 (เท่าขั้นสูง${LEVELS[n].name} ${fmt(LEVELS[n].max)}) ตั้งแต่ พ.ศ. ${p.year + capHitY}` : `เงินเดือนชนเพดาน${lvName(lv)} ตั้งแต่ พ.ศ. ${p.year + capHitY}`); }
+    if (LEVELS[p.posNow] && !p.over50 && capHitY !== undefined && nextLevel(levelAt(p, capHitY))) warns.push('ถ้ามีสิทธิเงินเดือนสูงกว่าขั้นสูง (ม.50/1) เปิดตัวเลือกนี้เพื่อดูผลต่อบำนาญ');
     renderCmp(r);
     $('govWarn').textContent = warns.join(' · ');
   }
