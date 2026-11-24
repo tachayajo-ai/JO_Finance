@@ -99,6 +99,22 @@ fieldset.tax legend { color: var(--tax); }
 #govCmp th:first-child, #govCmp td:first-child { text-align: left; }
 #govCmp td.win { color: var(--good); font-weight: 700; }
 #govCmp th.sel { color: var(--gov); }
+.plan { gap: 6px; }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.prow { display: grid; gap: 6px; align-items: center; }
+.prow.lump { grid-template-columns: 0.9fr 1.3fr auto; }
+.prow.range { grid-template-columns: 0.8fr 0.8fr 1.2fr auto; }
+.prow > * { min-width: 0; }
+.prow .inp input { padding: 6px 8px; font-size: 0.92rem; width: 100%; min-width: 0; }
+.prow .inp span { padding-right: 6px; font-size: 0.72rem; }
+.prow .dash { display: none; }
+.prow button.del { border: 0; background: transparent; color: var(--muted); font-size: 1.1rem; padding: 4px 6px; line-height: 1; }
+.prow button.del:hover { color: var(--bad); }
+.rowhead { display: grid; gap: 6px; font-size: 0.72rem; color: var(--muted); }
+button.addrow { align-self: flex-start; border-style: dashed; font-size: 0.82rem; padding: 5px 10px; }
+.planwarn { font-size: 0.75rem; color: var(--warm); line-height: 1.4; }
+.planwarn:empty { display: none; }
+td small.ov { color: var(--accent); font-size: 0.7rem; margin-left: 4px; }
 .check { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer; }
 .check input { width: 16px; height: 16px; accent-color: var(--gov); margin: 3px 0 0; flex-shrink: 0; }
 .calcbar { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); margin: 0 -18px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); border-radius: 0 0 14px 14px; display: flex; flex-direction: column; gap: 6px; z-index: 2; }
@@ -217,6 +233,20 @@ td.gov { color: var(--gov); }
         <div class="field full"><label for="initial">ทุนตั้งต้น (เงินลงทุนที่มีอยู่แล้ว ไม่รวม กบข.)</label><div class="inp"><input id="initial" class="money" inputmode="decimal"><span>บาท</span></div></div>
         <div class="field full"><label for="monthly">ลงทุนเพิ่มทุกเดือน</label><div class="inp"><input id="monthly" class="money" inputmode="decimal"><span>บาท/เดือน</span></div></div>
         <div class="field full"><label for="stepUp">เพิ่มเงินลงทุนรายเดือนทุกปี</label><div class="inp"><input id="stepUp" inputmode="decimal"><span>% ต่อปี</span></div><div class="hint">ใส่ 0 ถ้าลงทุนเท่าเดิมทุกปี</div></div>
+        <div class="field full plan">
+          <span class="lbl-text">ลงทุนเงินก้อนเพิ่มตามปี</span>
+          <div class="rows" id="lumpRows"></div>
+          <button type="button" class="addrow" id="addLump">+ เพิ่มเงินก้อน</button>
+          <div class="hint">เงินก้อนเข้าพอร์ตต้นปีนั้น บวกเพิ่มจากเงินลงทุนรายเดือน</div>
+          <div class="planwarn" id="lumpWarn"></div>
+        </div>
+        <div class="field full plan">
+          <span class="lbl-text">กำหนดเงินลงทุนรายเดือนเป็นช่วงปี</span>
+          <div class="rows" id="rangeRows"></div>
+          <button type="button" class="addrow" id="addRange">+ เพิ่มช่วงปี</button>
+          <div class="hint">ปีในช่วงที่กำหนด ใช้จำนวนนี้แทน "ลงทุนเพิ่มทุกเดือน" (ไม่ปรับเพิ่มรายปี) ปีที่ไม่อยู่ในช่วงใดใช้ค่าปกติ</div>
+          <div class="planwarn" id="rangeWarn"></div>
+        </div>
         <div class="field"><label for="retPre">ผลตอบแทนก่อนเกษียณ</label><div class="inp"><input id="retPre" inputmode="decimal"><span>%/ปี</span></div></div>
         <div class="field"><label for="retPost">ผลตอบแทนหลังเกษียณ</label><div class="inp"><input id="retPost" inputmode="decimal"><span>%/ปี</span></div></div>
         <div class="field full"><label for="inflation">อัตราเงินเฟ้อ</label><div class="inp"><input id="inflation" inputmode="decimal"><span>%/ปี</span></div></div>
@@ -365,6 +395,7 @@ td.gov { color: var(--gov); }
         <b>สมมติฐานการคำนวณ</b>
         <ul>
           <li>ทบต้นรายเดือนจากผลตอบแทนต่อปี ลงทุนต้นเดือน เงินเดือนปรับปีละครั้ง</li>
+          <li>เงินก้อนเพิ่มตามปีเข้าพอร์ตต้นปี พ.ศ. นั้น ช่วงปีที่กำหนดเงินรายเดือนเองใช้จำนวนคงที่แทนค่าปกติ ถ้าช่วงซ้อนกันใช้แถวล่างสุด รายการที่ปีอยู่นอกช่วงก่อนเกษียณไม่นำมาคำนวณ และยังไม่นำมาคิดลดหย่อนภาษี</li>
           <li>หลังเกษียณถอนเงินต้นเดือนเท่ากับ ค่าใช้จ่าย − บำนาญ − รายได้อื่น ค่าใช้จ่ายเพิ่มตามเงินเฟ้อ บำนาญคงที่ (ไม่รวม ช.ค.บ. และการปรับเพิ่มบำนาญในอนาคต)</li>
           <li>เงิน กบข. บำเหน็จ และบำเหน็จดำรงชีพ นำเข้าพอร์ตเป็นเงินก้อนเพื่อใช้หลังเกษียณ</li>
           <li>"เงินที่ต้องมี" = มูลค่า ณ วันเกษียณของเงินที่ต้องถอนจนถึงอายุขัย หักมูลค่าบำเหน็จดำรงชีพที่จะได้รับภายหลัง คิดลดด้วยผลตอบแทนหลังเกษียณ</li>
@@ -443,13 +474,47 @@ td.gov { color: var(--gov); }
     else if (TEXT.includes(k)) el.value = v;
     else el.value = el.classList.contains('money') ? fmt(v) : String(v);
   }
+  // Per-year plan rows: lump sums by year, and monthly amounts by year range
+  const esc = (v) => String(v ?? '').replace(/"/g, '&quot;');
+  function addLumpRow(v = {}) {
+    const d = document.createElement('div'); d.className = 'prow lump';
+    d.innerHTML = `<div class="inp"><input class="py" inputmode="numeric" placeholder="พ.ศ." aria-label="ปี พ.ศ." value="${esc(v.year)}"></div>
+      <div class="inp"><input class="pamt money" inputmode="decimal" placeholder="จำนวนเงิน" aria-label="จำนวนเงิน" value="${v.amount ? fmt(v.amount) : ''}"><span>บาท</span></div>
+      <button type="button" class="del" aria-label="ลบรายการ">×</button>`;
+    $('lumpRows').appendChild(d); return d;
+  }
+  function addRangeRow(v = {}) {
+    const d = document.createElement('div'); d.className = 'prow range';
+    d.innerHTML = `<div class="inp"><input class="pf" inputmode="numeric" placeholder="จาก พ.ศ." aria-label="จากปี พ.ศ." value="${esc(v.from)}"></div>
+      <div class="inp"><input class="pt" inputmode="numeric" placeholder="ถึง พ.ศ." aria-label="ถึงปี พ.ศ." value="${esc(v.to)}"></div>
+      <div class="inp"><input class="pamt money" inputmode="decimal" placeholder="บาท/เดือน" aria-label="เงินลงทุนต่อเดือน" value="${v.amount !== undefined && v.amount !== '' ? fmt(v.amount) : ''}"><span>/ด.</span></div>
+      <button type="button" class="del" aria-label="ลบช่วงปี">×</button>`;
+    $('rangeRows').appendChild(d); return d;
+  }
+  function setPlanRows(lumps, ranges) {
+    $('lumpRows').innerHTML = ''; $('rangeRows').innerHTML = '';
+    (lumps || []).forEach((v) => addLumpRow(v));
+    (ranges || []).forEach((v) => addRangeRow(v));
+  }
+  function readPlanRows() {
+    const lumps = [...$('lumpRows').children].map((d) => ({ year: parse(d.querySelector('.py').value), amount: parse(d.querySelector('.pamt').value) }));
+    const ranges = [...$('rangeRows').children].map((d) => ({ from: parse(d.querySelector('.pf').value), to: parse(d.querySelector('.pt').value), amount: parse(d.querySelector('.pamt').value) }));
+    return { lumps, ranges };
+  }
+
   function load() {
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem(STORE) || '{}') || {}; } catch (e) { saved = {}; }
     FIELDS.forEach((k) => setField(k, saved[k] ?? DEFAULTS[k]));
+    setPlanRows(saved.lumps || [], saved.ranges || []);
     syncGovUI();
   }
-  function save(p) { try { localStorage.setItem(STORE, JSON.stringify(p)); } catch (e) {} }
+  function save(p) {
+    const o = {}; FIELDS.forEach((k) => (o[k] = p[k]));
+    o.lumps = p.lumps.filter((x) => !isNaN(x.year) || !isNaN(x.amount));
+    o.ranges = p.ranges.filter((x) => !isNaN(x.from) || !isNaN(x.to) || !isNaN(x.amount));
+    try { localStorage.setItem(STORE, JSON.stringify(o)); } catch (e) {}
+  }
 
   function syncGovUI() {
     const on = $('govOn').checked, gpf = $('system').value === 'gpf';
@@ -503,8 +568,40 @@ td.gov { color: var(--gov); }
         if (p.system === 'gpf' && p.gpfBalance < 0) errs.push('ยอดเงิน กบข. ต้องไม่ติดลบ');
       }
     }
+    Object.assign(p, readPlanRows());
+    buildPlan(p);
     return { p, errs: [...new Set(errs)] };
   }
+
+  // Validate plan rows into p.lumpMap / p.rangeList; problems become warnings, never block the calculation
+  function buildPlan(p) {
+    const first = p.year, lastAcc = p.year + (p.retireAge - p.age) - 1;
+    const lw = [], rw = [];
+    p.lumpMap = {}; p.rangeList = [];
+    const okNums = !isNaN(p.year) && !isNaN(p.age) && !isNaN(p.retireAge);
+    p.lumps.forEach((x, i) => {
+      const n = `แถว ${i + 1}`;
+      if (isNaN(x.year) && isNaN(x.amount)) return;
+      if (isNaN(x.year) || isNaN(x.amount)) { lw.push(`${n}: กรอกทั้งปี พ.ศ. และจำนวนเงิน`); return; }
+      if (x.amount <= 0) { lw.push(`${n}: จำนวนเงินต้องมากกว่า 0`); return; }
+      if (okNums && (x.year < first || x.year > lastAcc)) { lw.push(`${n}: พ.ศ. ${x.year} อยู่นอกช่วงก่อนเกษียณ (${first}–${lastAcc}) ไม่นำมาคำนวณ`); return; }
+      p.lumpMap[x.year] = (p.lumpMap[x.year] || 0) + x.amount;
+    });
+    p.ranges.forEach((x, i) => {
+      const n = `แถว ${i + 1}`;
+      if (isNaN(x.from) && isNaN(x.to) && isNaN(x.amount)) return;
+      if (isNaN(x.from) || isNaN(x.to) || isNaN(x.amount)) { rw.push(`${n}: กรอกปีเริ่ม ปีสิ้นสุด และจำนวนเงินให้ครบ`); return; }
+      if (x.amount < 0) { rw.push(`${n}: จำนวนเงินต้องไม่ติดลบ`); return; }
+      if (x.from > x.to) { rw.push(`${n}: ปีเริ่ม (${x.from}) มากกว่าปีสิ้นสุด (${x.to}) ไม่นำมาคำนวณ`); return; }
+      if (okNums && (x.to < first || x.from > lastAcc)) { rw.push(`${n}: พ.ศ. ${x.from}–${x.to} อยู่นอกช่วงก่อนเกษียณ (${first}–${lastAcc}) ไม่นำมาคำนวณ`); return; }
+      if (okNums && (x.from < first || x.to > lastAcc)) rw.push(`${n}: ใช้เฉพาะ พ.ศ. ${Math.max(x.from, first)}–${Math.min(x.to, lastAcc)} ส่วนที่เกินช่วงก่อนเกษียณไม่นำมาคำนวณ`);
+      const clash = p.rangeList.find((o) => !(x.to < o.from || x.from > o.to));
+      if (clash) rw.push(`${n}: ซ้อนกับช่วง ${clash.from}–${clash.to} ใช้แถวนี้ในปีที่ซ้อนกัน`);
+      p.rangeList.push({ from: x.from, to: x.to, amount: x.amount });
+    });
+    p.planWarns = { lump: lw, range: rw };
+  }
+  const rangeFor = (p, yr) => { const l = p.rangeList || []; for (let i = l.length - 1; i >= 0; i--) if (yr >= l[i].from && yr <= l[i].to) return l[i].amount; return null; };
 
   const mrate = (pct) => Math.pow(1 + pct / 100, 1 / 12) - 1;
   const levelCap = (p, lv) => (LEVELS[lv] ? effMax(lv, p.over50) : lv === 'custom' && p.salaryCap > 0 ? p.salaryCap : Infinity);
@@ -530,10 +627,13 @@ td.gov { color: var(--gov); }
     const rows = [];
     for (let y = 0; y < years; y++) {
       let c = 0, g = 0;
-      for (let i = 0; i < 12; i++) { bal += m; c += m; const gi = bal * r; bal += gi; g += gi; }
+      const yr = p.year + y, ov = rangeFor(p, yr), mm = ov !== null ? ov : m;
+      const lump = (p.lumpMap && p.lumpMap[yr]) || 0;
+      bal += lump;
+      for (let i = 0; i < 12; i++) { bal += mm; c += mm; const gi = bal * r; bal += gi; g += gi; }
       if (p.taxAdd) { bal += p.taxAdd; c += p.taxAdd; }
-      contributed += c;
-      if (collect) rows.push({ y, phase: 'acc', contrib: c, gain: g, end: bal, contributed, monthly: m });
+      contributed += c + lump;
+      if (collect) rows.push({ y, phase: 'acc', contrib: c, extraLump: lump, overridden: ov !== null, gain: g, end: bal, contributed, monthly: mm });
       m *= 1 + p.stepUp / 100;
     }
     return { bal, contributed, rows };
@@ -688,6 +788,8 @@ td.gov { color: var(--gov); }
       return;
     }
     save(p);
+    $('lumpWarn').textContent = p.planWarns.lump.join(' · ');
+    $('rangeWarn').textContent = p.planWarns.range.join(' · ');
     const t = taxCalc(p);
     p.taxAdd = t && p.reinvestTax ? t.saved : 0;
     const r = compute(p);
@@ -711,7 +813,7 @@ td.gov { color: var(--gov); }
       const add = r.needMonthly - p.monthly, dep = r.depletedAge;
       banner2.className = 'banner short';
       banner2.innerHTML = `<span class="pill">เงินไม่พอ</span><div><h2>${dep !== null ? `เงินหมดตอนอายุ ${ageLabel(dep)} (พ.ศ. ${ageToYear(p, dep)})` : 'เงินไม่พอตามแผน'} ขาดอีก ${fmtM(-gap)} บาท ณ วันเกษียณ</h2>
-        <p>ต้องลงทุนส่วนตัวเพิ่มอีกเดือนละ ${fmtB(add)} (รวมเป็น ${fmtB(r.needMonthly)} ในปีแรก) หรือปรับอายุเกษียณ/ค่าใช้จ่าย</p></div>`;
+        <p>${isFinite(r.needMonthly) ? `ต้องลงทุนส่วนตัวเพิ่มอีกเดือนละ ${fmtB(add)} (รวมเป็น ${fmtB(r.needMonthly)} ${p.rangeList.length ? 'ในปีที่ไม่ได้กำหนดช่วงเอง' : 'ในปีแรก'})` : 'ทุกปีกำหนดเงินลงทุนรายเดือนเองแล้ว ให้เพิ่มจำนวนในช่วงปีหรือเงินก้อน'} หรือปรับอายุเกษียณ/ค่าใช้จ่าย</p></div>`;
     }
 
     $('kBal').textContent = fmtM(r.resources);
@@ -733,11 +835,15 @@ td.gov { color: var(--gov); }
       $('kGovSub').textContent = `ผลตอบแทน ${fmtM(gain)}`;
     }
     $('kNeed').textContent = isFinite(r.needMonthly) ? fmt(r.needMonthly) : '–';
-    $('kNeedSub').textContent = r.needMonthly <= p.monthly ? `ตอนนี้ลง ${fmt(p.monthly)} เพียงพอแล้ว` : `ตอนนี้ลง ${fmt(p.monthly)} ขาด ${fmt(r.needMonthly - p.monthly)}/เดือน`;
+    if (!isFinite(r.needMonthly)) $('kNeedSub').textContent = 'ทุกปีกำหนดเงินรายเดือนเองแล้ว';
+    else if (p.rangeList.length) $('kNeedSub').textContent = `ค่าปกติ (ปีที่ไม่ได้กำหนดช่วง) ตอนนี้ ${fmt(p.monthly)}` + (r.needMonthly > p.monthly ? ` ขาด ${fmt(r.needMonthly - p.monthly)}` : ' เพียงพอแล้ว');
+    else $('kNeedSub').textContent = r.needMonthly <= p.monthly ? `ตอนนี้ลง ${fmt(p.monthly)} เพียงพอแล้ว` : `ตอนนี้ลง ${fmt(p.monthly)} ขาด ${fmt(r.needMonthly - p.monthly)}/เดือน`;
 
     const netAtRet = Math.max(0, r.expenseAtRet - r.income);
     $('facts').innerHTML = [
       `ลงทุนอีก <b>${r.yearsAcc} ปี</b>`,
+      Object.keys(p.lumpMap).length ? `เงินก้อนเพิ่มรวม <b>${fmt(Object.values(p.lumpMap).reduce((a, b) => a + b, 0))}</b> (${Object.keys(p.lumpMap).length} ปี)` : null,
+      p.rangeList.length ? `กำหนดเงินรายเดือนเอง <b>${p.rangeList.length} ช่วง</b>` : null,
       `ใช้เงินหลังเกษียณ <b>${r.yearsRet} ปี</b>`,
       `ค่าใช้จ่าย ณ ปีเกษียณ <b>${fmt(r.expenseAtRet)}</b>/เดือน`,
       `ถอนจากเงินก้อนเดือนแรก <b>${fmt(netAtRet)}</b>`,
@@ -950,20 +1056,20 @@ td.gov { color: var(--gov); }
     const p = r.p, real = view === 'real';
     return r.rows.map((row) => {
       const t = row.y + 1, a = (v) => (real ? deflate(p, v, t) : v);
-      return { be: p.year + row.y, age: p.age + row.y, phase: row.phase, sal: a(row.sal), contrib: a(row.contrib), gpfIn: a(row.gpfIn), gain: a(row.gain), lumpIn: a(row.lumpIn), pensionY: a(row.pensionY), withdraw: a(row.withdraw), gpfEnd: a(row.gpfEnd), total: a(row.total) };
+      return { be: p.year + row.y, age: p.age + row.y, phase: row.phase, sal: a(row.sal), contrib: a(row.contrib), extraLump: a(row.extraLump || 0), overridden: !!row.overridden, gpfIn: a(row.gpfIn), gain: a(row.gain), lumpIn: a(row.lumpIn), pensionY: a(row.pensionY), withdraw: a(row.withdraw), gpfEnd: a(row.gpfEnd), total: a(row.total) };
     });
   }
   const dash = (v) => (v ? fmt(v) : '–');
 
   function renderTable(r) {
-    const p = r.p, gov = !!r.g;
+    const p = r.p, gov = !!r.g, lumpCol = Object.keys(p.lumpMap || {}).length > 0;
     const body = tableRows(r).map((x) => {
       const out = x.phase === 'ret' && x.total < 1;
       const tag = x.phase === 'acc' ? '<span class="tag acc">สะสม</span>' : out ? '<span class="tag out">เงินหมด</span>' : '<span class="tag ret">ใช้เงิน</span>';
       const cls = [x.phase === 'ret' ? 'ret' : '', x.age + 1 === p.retireAge ? 'mark' : ''].join(' ').trim();
-      return `<tr class="${cls}"><td>${x.be}</td><td>${x.age}</td><td>${tag}</td>${gov ? `<td>${dash(x.sal)}</td>` : ''}<td>${dash(x.contrib)}</td>${gov ? `<td class="gov">${dash(x.gpfIn)}</td><td class="gov">${dash(x.pensionY)}</td><td class="gov">${dash(x.lumpIn)}</td>` : ''}<td>${fmt(x.gain)}</td><td>${dash(x.withdraw)}</td>${gov ? `<td class="gov">${dash(x.gpfEnd)}</td>` : ''}<td><b>${fmt(x.total)}</b></td></tr>`;
+      return `<tr class="${cls}"><td>${x.be}</td><td>${x.age}</td><td>${tag}</td>${gov ? `<td>${dash(x.sal)}</td>` : ''}<td>${dash(x.contrib)}${x.overridden ? '<small class="ov">กำหนดเอง</small>' : ''}</td>${lumpCol ? `<td>${dash(x.extraLump)}</td>` : ''}${gov ? `<td class="gov">${dash(x.gpfIn)}</td><td class="gov">${dash(x.pensionY)}</td><td class="gov">${dash(x.lumpIn)}</td>` : ''}<td>${fmt(x.gain)}</td><td>${dash(x.withdraw)}</td>${gov ? `<td class="gov">${dash(x.gpfEnd)}</td>` : ''}<td><b>${fmt(x.total)}</b></td></tr>`;
     }).join('');
-    const head = ['พ.ศ.', 'อายุ', 'ช่วง', ...(gov ? ['เงินเดือน'] : []), 'ลงทุนส่วนตัว', ...(gov ? ['เข้า กบข.', 'บำนาญรับ/ปี', 'เงินก้อนเข้า'] : []), 'ผลตอบแทน', 'ถอนใช้', ...(gov ? ['ยอด กบข.'] : []), 'ยอดรวมสิ้นปี' + (view === 'real' ? ' (เงินวันนี้)' : '')];
+    const head = ['พ.ศ.', 'อายุ', 'ช่วง', ...(gov ? ['เงินเดือน'] : []), 'ลงทุนรายเดือน (ทั้งปี)', ...(lumpCol ? ['เงินก้อนเพิ่ม'] : []), ...(gov ? ['เข้า กบข.', 'บำนาญรับ/ปี', 'เงินก้อนเข้า'] : []), 'ผลตอบแทน', 'ถอนใช้', ...(gov ? ['ยอด กบข.'] : []), 'ยอดรวมสิ้นปี' + (view === 'real' ? ' (เงินวันนี้)' : '')];
     $('yearly').innerHTML = `<thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody>`;
   }
 
@@ -985,6 +1091,8 @@ td.gov { color: var(--gov); }
       'สรุปแผนเงินเกษียณ (LIACAM Retirements)',
       `- อายุ ${p.age} ปี (พ.ศ. ${p.year}) เกษียณอายุ ${p.retireAge} (พ.ศ. ${ageToYear(p, p.retireAge)}) วางแผนถึงอายุ ${p.lifeAge}`,
       `- ลงทุนส่วนตัว: ทุนตั้งต้น ${fmtB(p.initial)} เดือนละ ${fmtB(p.monthly)} เพิ่มปีละ ${p.stepUp}% ผลตอบแทน ${p.retPre}%/${p.retPost}% เงินเฟ้อ ${p.inflation}%`,
+      Object.keys(p.lumpMap).length ? `- เงินก้อนเพิ่ม: ${Object.entries(p.lumpMap).map(([y, a]) => `พ.ศ. ${y} ${fmtB(a)}`).join(', ')}` : null,
+      p.rangeList.length ? `- เงินรายเดือนกำหนดเอง: ${p.rangeList.map((x) => `พ.ศ. ${x.from}–${x.to} เดือนละ ${fmtB(x.amount)}`).join(', ')}` : null,
       g ? `- ข้าราชการ (${g.isGpf ? 'สมาชิก กบข.' : 'ระบบเดิม'}) เวลาราชการ ${g.service} ปี ${g.benefit === 'pension' ? `บำนาญ ${fmtB(g.pension)}/เดือน` : `บำเหน็จ ${fmtB(g.govLump)}`}` : null,
       g && g.isGpf ? `- เงิน กบข. ณ เกษียณ ${fmtB(g.gpf.bal)}` : null,
       g && g.life.length ? `- บำเหน็จดำรงชีพรวม ${fmtB(g.life.reduce((a, e) => a + e.amt, 0))}` : null,
@@ -998,10 +1106,10 @@ td.gov { color: var(--gov); }
 
   function tableTsv() {
     if (!last) return '';
-    const gov = !!last.g;
-    const head = ['พ.ศ.', 'อายุ', 'ช่วง', ...(gov ? ['เงินเดือน'] : []), 'ลงทุนส่วนตัว', ...(gov ? ['เข้า กบข.', 'บำนาญรับ/ปี', 'เงินก้อนเข้า'] : []), 'ผลตอบแทน', 'ถอนใช้', ...(gov ? ['ยอด กบข.'] : []), 'ยอดรวมสิ้นปี'];
+    const gov = !!last.g, lumpCol = Object.keys(last.p.lumpMap || {}).length > 0;
+    const head = ['พ.ศ.', 'อายุ', 'ช่วง', ...(gov ? ['เงินเดือน'] : []), 'ลงทุนรายเดือน (ทั้งปี)', ...(lumpCol ? ['เงินก้อนเพิ่ม'] : []), ...(gov ? ['เข้า กบข.', 'บำนาญรับ/ปี', 'เงินก้อนเข้า'] : []), 'ผลตอบแทน', 'ถอนใช้', ...(gov ? ['ยอด กบข.'] : []), 'ยอดรวมสิ้นปี'];
     const R = Math.round;
-    const lines = tableRows(last).map((x) => [x.be, x.age, x.phase === 'acc' ? 'สะสม' : 'ใช้เงิน', ...(gov ? [R(x.sal)] : []), R(x.contrib), ...(gov ? [R(x.gpfIn), R(x.pensionY), R(x.lumpIn)] : []), R(x.gain), R(x.withdraw), ...(gov ? [R(x.gpfEnd)] : []), R(x.total)].join('\t'));
+    const lines = tableRows(last).map((x) => [x.be, x.age, x.phase === 'acc' ? 'สะสม' : 'ใช้เงิน', ...(gov ? [R(x.sal)] : []), R(x.contrib), ...(lumpCol ? [R(x.extraLump)] : []), ...(gov ? [R(x.gpfIn), R(x.pensionY), R(x.lumpIn)] : []), R(x.gain), R(x.withdraw), ...(gov ? [R(x.gpfEnd)] : []), R(x.total)].join('\t'));
     return [head.join('\t'), ...lines].join('\n');
   }
 
@@ -1022,7 +1130,15 @@ td.gov { color: var(--gov); }
   const pickBenefit = (v) => { $('benefit').value = v; syncGovUI(); setDirty(true); };
   $('bPension').addEventListener('click', () => pickBenefit('pension'));
   $('bLump').addEventListener('click', () => pickBenefit('lump'));
-  $('btnReset').addEventListener('click', () => { FIELDS.forEach((k) => setField(k, DEFAULTS[k])); syncGovUI(); calculate(); toast('ใช้ค่าตัวอย่างแล้ว'); });
+  $('addLump').addEventListener('click', () => { addLumpRow().querySelector('input').focus(); setDirty(true); });
+  $('addRange').addEventListener('click', () => { addRangeRow().querySelector('input').focus(); setDirty(true); });
+  ['lumpRows', 'rangeRows'].forEach((id) => {
+    const box = $(id);
+    box.addEventListener('input', () => setDirty(true));
+    box.addEventListener('click', (e) => { const b = e.target.closest('button.del'); if (b) { b.closest('.prow').remove(); setDirty(true); } });
+    box.addEventListener('focusout', (e) => { const el = e.target; if (el.classList && el.classList.contains('money')) { const v = parse(el.value); if (!isNaN(v)) el.value = fmt(v); } });
+  });
+  $('btnReset').addEventListener('click', () => { FIELDS.forEach((k) => setField(k, DEFAULTS[k])); setPlanRows([], []); syncGovUI(); calculate(); toast('ใช้ค่าตัวอย่างแล้ว'); });
   $('btnCopy').addEventListener('click', () => copyText(summaryText(), 'คัดลอกสรุปแล้ว'));
   $('btnTsv').addEventListener('click', () => copyText(tableTsv(), 'คัดลอกตารางแล้ว'));
   const setView = (v) => { view = v; $('vNom').setAttribute('aria-pressed', v === 'nom'); $('vReal').setAttribute('aria-pressed', v === 'real'); if (last) { renderChart(last); renderTable(last); } };
